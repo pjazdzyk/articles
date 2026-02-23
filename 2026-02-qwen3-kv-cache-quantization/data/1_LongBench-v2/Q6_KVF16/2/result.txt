@@ -1,0 +1,2 @@
+Model	Overall	Easy	Hard	Short	Medium	Long
+qwen3-coder-30b.inst_bottom	38.4	43.8	35.0	41.7	36.3	37.0
