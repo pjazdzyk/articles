@@ -1,0 +1,6 @@
+theme: jekyll-theme-cayman
+title: Engineering Publications & Technical Reports
+favicon: assets/images/sns-favicon.png
+markdown: kramdown
+kramdown:
+  math_engine: mathjax

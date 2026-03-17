@@ -1,5 +1,13 @@
 ## Memory-Constrained Quantization Analysis of Qwen3-Coder-30B: Balancing Reasoning Integrity and Extended Context Capacity
 
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  .main-content { max-width: 1400px; margin: 0 auto; }
+  table { display: block; width: 100%; overflow-x: auto; }
+</style>
+
 **Piotr Jażdżyk**   
 [https://github.com/pjazdzyk](https://github.com/pjazdzyk)  
 [https://www.linkedin.com/in/pjazdzyk/](https://www.linkedin.com/in/pjazdzyk/)  
@@ -9,25 +17,24 @@
 
 ## Table of Contents
 
-[Abstract](#abstract)<br>
-[1. Introduction](#1-introduction)<br>
-[2. Technical background](#2-technical-background)<br>
-  &nbsp;&nbsp;[2.1 VRAM usage optimization](#21-vram-usage-optimization)<br>
-  &nbsp;&nbsp;[2.2 Qwen3-Coder - analyzed model](#22-qwen3-coder---analyzed-model)<br>
-  &nbsp;&nbsp;[2.3 Benchmarking suites](#23-benchmarking-suites)<br>
-[3. Methodology: Test Bench & Configuration](#3-methodology-test-bench--configuration)<br>
-  &nbsp;&nbsp;[3.1 Hardware and Software Environment](#31-hardware-and-software-environment)<br>
-  &nbsp;&nbsp;[3.2 Execution procedure](#32-execution-procedure)<br>
-  &nbsp;&nbsp;[3.3 Experiment plan - quantization Matrix](#33-experiment-plan---quantization-matrix)<br>
-[4. Performance Evaluation Metrics](#4-performance-evaluation-metrics)<br>
-[5. Results and Discussion](#5-results-and-discussion)<br>
-  &nbsp;&nbsp;[5.1 LongBench-v2 benchmark result analysis](#51-longbench-v2-benchmark-result-analysis)<br>
-  &nbsp;&nbsp;[5.2 BigCodeBench benchmark result analysis](#52-bigcodebench-benchmark-result-analysis)<br>
-  &nbsp;&nbsp;[5.3 VRAM memory usage and max context size estimation](#53-vram-memory-usage-and-max-context-size-estimation)<br>
-  &nbsp;&nbsp;[5.4 Inference Performance Analysis](#54-inference-performance-analysis)<br>
-  &nbsp;&nbsp;[5.5 Comparative Analysis and performance evaluation](#55-comparative-analysis-and-performance-evaluation)<br>
-[6. Conclusions](#6-conclusions)<br>
-[7. References](#7-references)<br>
+1. [Introduction](#1-introduction)
+2. [Technical background](#2-technical-background)
+    * 2.1 [VRAM usage optimization](#21-vram-usage-optimization)
+    * 2.2 [Qwen3-Coder-30b - analyzed model](#22-qwen3-coder---analyzed-model)
+    * 2.3 [Benchmarking suites](#23-benchmarking-suites)
+3. [Methodology: Test Bench & Configuration](#3-methodology-test-bench--configuration)
+    * 3.1 [Hardware and Software Environment](#31-hardware-and-software-environment)
+    * 3.2 [Execution procedure](#32-execution-procedure)
+    * 3.3 [Experiment plan - quantization Matrix](#33-experiment-plan---quantization-matrix)
+4. [Performance Evaluation Metrics](#4-performance-evaluation-metrics)
+5. [Results and Discussion](#5-results-and-discussion)
+    * 5.1 [LongBench-v2 benchmark result analysis](#51-longbench-v2-benchmark-result-analysis)
+    * 5.2 [BigCodeBench benchmark result analysis](#52-bigcodebench-benchmark-result-analysis)
+    * 5.3 [VRAM memory usage and max context size estimation](#53-vram-memory-usage-and-max-context-size-estimation)
+    * 5.4 [Inference Performance Analysis](#54-inference-performance-analysis)
+    * 5.5 [Comparative Analysis and performance evaluation](#55-comparative-analysis-and-performance-evaluation)
+6. [Conclusions](#6-conclusions)
+7. [References](#7-references)
 
 ### **Abstract**
 
@@ -68,7 +75,7 @@ To evaluate the impact of quantization on the model's performance, two distinct 
 
 The primary goal of this methodology was to ensure a deterministic and reproducible testing environment, allowing for a fair comparison between various quantization levels.
 
-**3.1 Hardware and Software Environment** 
+#### **3.1 Hardware and Software Environment** 
 
 All tests were performed on a local workstation:
 
@@ -100,7 +107,7 @@ Benchmark configuration:
 * Mode: Instruct, greedy decoding  
 * HARD (focusing on the most demanding coding tasks).
 
-**3.2 Execution procedure**
+#### **3.2 Execution procedure**
 
 * Full VRAM Purge: The model was completely ejected from memory before each test.  
 * If required memory could not fit in GPU, a CPU offloading strategy was used,  
@@ -108,7 +115,7 @@ Benchmark configuration:
 * Monitoring: System memory and VRAM utilization were monitored to identify when the system resorted to CPU Offloading or Shared Memory Fallback.  
 * Monitoring tools: nvitop 1.3.2, HwMonitor 1.62.0
 
-**3.3 Experiment plan \- quantization Matrix**
+#### **3.3 Experiment plan \- quantization Matrix**
 
 The study utilized a cross-testing approach between model weights and KV cache precisions. Each model quantization was tested against all three KV.
 
@@ -116,7 +123,6 @@ Table 1: Experiment plan matrix
 
 | No. | Weights  quantization | KV Cache quantization |
 | :---: | :---: | :---: |
-|  |  |  |
 | 1 | Q6\_K | F16 |
 | 2 | Q6\_K | Q8\_0 |
 | 3 | Q6\_K | Q4\_0 |
@@ -184,45 +190,44 @@ VRAM_{total} - total VRAM memory used for analyzed test case in GB
 
 ### **5\. Results and Discussion**
 
-**5.1 LongBench-v2 benchmark result analysis**
+#### **5.1 LongBench-v2 benchmark result analysis**
 
 The results from the LongBench-v2 benchmark are presented in the tables below. LongBench-v2 categorizes outcomes by task type and context length. From the perspective of analyzing model degradation, the **"Hard"** and **"Long"** task groups deserve special attention, as they represent the most demanding scenarios for both the model's reasoning capabilities and higher potential for degradation due to heavy quantization. Model context size was set as: fixed **128 000\.** The ‘Delta’ column quantifies the performance difference by comparing each configuration's results against the baseline.
 
 Table 2: **LongBenchV2** results analysis: **Easy**, **Short** and **Medium** tasks.
 
-| No. | Weight quant. | KV Cache quant | RESULTS % |  |  |  |  |  |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|  |  |  | **Easy** | **Delta, (vs LP1)** | **Short** | **Delta, (vs LP1)** | **Medium** | **Delta, (vs LP1)** |
-| 1 | Q6\_K | F16 | 43.8 | (base) | 41.7 | (base) | 36.3 | (base) |
-| **2** | **Q6\_K** | **Q8\_0** | **41.7** | **\-2.1** | **42.8** | **1.1** | **36.3** | **0** |
-| 3 | Q6\_K | Q4\_0 | 39.1 | \-4.7 | 42.8 | 1.1 | 32.1 | \-4.2 |
-| 4 | Q5\_K\_XL | F16 | 41.7 | \-2.1 | 43.3 | 1.6 | 35.3 | \-1 |
-| 5 | Q5\_K\_XL | Q8\_0 | 41.7 | \-2.1 | 42.2 | 0.5 | 34.9 | \-1.4 |
-| 6 | Q5\_K\_XL | Q4\_0 | 40.6 | \-3.2 | 45 | 3.3 | 32.1 | \-4.2 |
-| 7 | Q4\_K\_M | F16 | 40.6 | \-3.2 | 41.7 | 0 | 34.9 | \-1.4 |
-| 8 | Q4\_K\_M | Q8\_0 | 40.1 | \-3.7 | 40.6 | \-1.1 | 35.8 | \-0.5 |
-| **9** | **Q4\_K\_M** | **Q4\_0** | **43.2** | **\-0.6** | **43.3** | **1.6** | **36.7** | **0.4** |
-| 10 | Q3\_K\_L | F16 | 40.6 | \-3.2 | 40 | \-1.7 | 29.3 | \-7 |
-| 11 | Q3\_K\_L | Q8\_0 | 42.2 | \-1.6 | 41.7 | 0 | 31.2 | \-5.1 |
-| 12 | Q3\_K\_L | Q4\_0 | 37.0 | \-6.8 | 36.7 | \-5 | 29.8 | \-6.5 |
+| No. | Weight quant. | KV Cache quant | Easy | Δ (vs LP1) | Short | Δ (vs LP1) | Medium | Δ (vs LP1) |
+|:---:|:--------------:|:--------------:|:----:|:----------:|:-----:|:----------:|:------:|:----------:|
+| 1 | Q6_K | F16 | 43.8 | (base) | 41.7 | (base) | 36.3 | (base) |
+| **2** | **Q6_K** | **Q8_0** | **41.7** | **-2.1** | **42.8** | **1.1** | **36.3** | **0** |
+| 3 | Q6_K | Q4_0 | 39.1 | -4.7 | 42.8 | 1.1 | 32.1 | -4.2 |
+| 4 | Q5_K_XL | F16 | 41.7 | -2.1 | 43.3 | 1.6 | 35.3 | -1 |
+| 5 | Q5_K_XL | Q8_0 | 41.7 | -2.1 | 42.2 | 0.5 | 34.9 | -1.4 |
+| 6 | Q5_K_XL | Q4_0 | 40.6 | -3.2 | 45 | 3.3 | 32.1 | -4.2 |
+| 7 | Q4_K_M | F16 | 40.6 | -3.2 | 41.7 | 0 | 34.9 | -1.4 |
+| 8 | Q4_K_M | Q8_0 | 40.1 | -3.7 | 40.6 | -1.1 | 35.8 | -0.5 |
+| **9** | **Q4_K_M** | **Q4_0** | **43.2** | **-0.6** | **43.3** | **1.6** | **36.7** | **0.4** |
+| 10 | Q3_K_L | F16 | 40.6 | -3.2 | 40 | -1.7 | 29.3 | -7 |
+| 11 | Q3_K_L | Q8_0 | 42.2 | -1.6 | 41.7 | 0 | 31.2 | -5.1 |
+| 12 | Q3_K_L | Q4_0 | 37.0 | -6.8 | 36.7 | -5 | 29.8 | -6.5 |
 
+<br>
 Table 3: **LongBenchV2** results analysis: **Hard** and **Long**
 
-| No. | Weight quant. | KV Cache quant. | RESULTS % |  |  |  |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|  |  |  | **Hard** | **Delta, (vs LP1)** | **Long** | **Delta, (vs LP1)** |
-| 1 | Q6\_K | F16 | 35.0 | (base) | 37 | (base) |
-| **2** | **Q6\_K** | **Q8\_0** | **37.3** | **2.3** | **38** | **1** |
-| 3 | Q6\_K | Q4\_0 | 34.4 | \-0.6 | 33.3 | \-3.7 |
-| **4** | **Q5\_K\_XL** | **F16** | **36.0** | **1.0** | **35.2** | **\-1.8** |
-| 5 | Q5\_K\_XL | Q8\_0 | 34.7 | \-0.3 | 34.3 | \-2.7 |
-| 6 | Q5\_K\_XL | Q4\_0 | 34.7 | \-0.3 | 33.3 | \-3.7 |
-| **7** | **Q4\_K\_M** | **F16** | **35.4** | **0.4** | **35.2** | **\-1.8** |
-| 8 | Q4\_K\_M | Q8\_0 | 34.4 | \-0.6 | 31.5 | \-5.5 |
-| 9 | Q4\_K\_M | Q4\_0 | 35.4 | 0.4 | 33.3 | \-3.7 |
-| 10 | Q3\_K\_L | F16 | 29.3 | \-5.7 | 31.5 | \-5.5 |
-| **11** | **Q3\_K\_L** | **Q8\_0** | **31.8** | **\-3.2** | **35.2** | **\-1.8** |
-| 12 | Q3\_K\_L | Q4\_0 | 29.9 | \-5.1 | 31.5 | \-5.5 |
+| No. | Weight quant. | KV Cache quant. | Hard | Δ (vs LP1) | Long | Δ (vs LP1) |
+|:---:|:--------------:|:----------------:|:----:|:----------:|:----:|:----------:|
+| 1 | Q6_K | F16 | 35.0 | (base) | 37 | (base) |
+| **2** | **Q6_K** | **Q8_0** | **37.3** | **2.3** | **38** | **1** |
+| 3 | Q6_K | Q4_0 | 34.4 | -0.6 | 33.3 | -3.7 |
+| **4** | **Q5_K_XL** | **F16** | **36.0** | **1.0** | **35.2** | **-1.8** |
+| 5 | Q5_K_XL | Q8_0 | 34.7 | -0.3 | 34.3 | -2.7 |
+| 6 | Q5_K_XL | Q4_0 | 34.7 | -0.3 | 33.3 | -3.7 |
+| **7** | **Q4_K_M** | **F16** | **35.4** | **0.4** | **35.2** | **-1.8** |
+| 8 | Q4_K_M | Q8_0 | 34.4 | -0.6 | 31.5 | -5.5 |
+| 9 | Q4_K_M | Q4_0 | 35.4 | 0.4 | 33.3 | -3.7 |
+| 10 | Q3_K_L | F16 | 29.3 | -5.7 | 31.5 | -5.5 |
+| **11** | **Q3_K_L** | **Q8_0** | **31.8** | **-3.2** | **35.2** | **-1.8** |
+| 12 | Q3_K_L | Q4_0 | 29.9 | -5.1 | 31.5 | -5.5 |
 
 As expected, the results show signs of accuracy degradation as model weights and KV cache are more aggressively quantized. However, this decline is non-linear, and several counter-intuitive anomalies were observed, which can be observed more easily on charts below:
 
@@ -234,16 +239,15 @@ The analysis of the LongBench-v2 results demonstrates that moderate quantization
 When comparing medium-bit quantization levels, the data indicates that the performance gap between Q5\_K\_XL and Q4\_K\_M is negligible across most LongBench-v2 categories. For instance, in "Hard" reasoning tasks, Q5\_K\_XL (F16 KV) achieved a score of 36.0%, while Q4\_K\_M (F16 KV) followed closely at 35.4%. Given the lower VRAM footprint of Q4\_K\_M, it is identified as a more resource-efficient alternative for 32GB hardware deployments, as it allows for significantly larger active context windows without incurring a substantial penalty in reasoning accuracy.  
 A notable observation was recorded regarding the Q3\_K\_L quantization. While a performance drop is evident in complex logic ("Hard" tasks, where scores fall to approximately 29–31%), this configuration exhibited a high degree of retrieval resilience. In the "Long" category, Case 11 (Q3\_K\_L / Q8\_0 KV) achieved a score of 35.2%, which is comparable to the results of the significantly larger Q5 and Q4 models. This suggests that the model’s ability to process and retrieve information from long sequences is less sensitive to aggressive weight quantization than its high-level reasoning capabilities. Consequently, Q3\_K\_L is identified as a viable option for tasks primarily focused on extensive document retrieval.
 
-**5.2 BigCodeBench benchmark result analysis**
+#### **5.2 BigCodeBench benchmark result analysis**
 
 The results from the BigCodeBench benchmark are summarised in the table below. Model context size was set as: 128 000 for consistency, however most of the tasks in this test suite can be solved with a smaller context window.
 
 Table 4: BigCodeBench results summary
 
-| No. | Model | Context | RESULTS |  |
-| :---: | :---: | :---: | :---: | :---: |
-|  | **Weight quant.** | **KV Cache quant** | **Pass@1 (%)** | **Delta, (vs LP1)** |
-| 1 | Q6\_K | F16 | 27.7 | (base) |
+| No. | Weight Quant. | KV Cache Quant. | Results: Pass@1 (%) | Delta (vs LP1) |
+|:---:|:---:|:---:|:---:|:---:|
+| 1 | Q6_K | F16 | 27.7 | (base) |
 | **2** | **Q6\_K** | **Q8\_0** | **29.7** | **2.0** |
 | 3 | Q6\_K | Q4\_0 | 25.7 | \-2.0 |
 | 4 | Q5\_K\_XL | F16 | 26.4 | \-1.3 |
@@ -263,16 +267,15 @@ Regarding medium-bit weights, the data reveals that Q4\_K\_M outperforms Q5\_K\_
 
 Additionally, Q3\_K\_L quantization remains competitive in code generation. With scores between 27.0% and 27.7%, it performs similarly to the FP16 baseline with the exception of KV Q8\_0, where decrease is observed over the Q6\_K model case. This indicates that the loss of precision in 3-bit weights is less significant in coding than in general reasoning. Consequently, Q3\_K\_L is identified as a reliable option for agentic workflows requiring maximum context on 32GB hardware.
 
-**5.3 VRAM memory usage and max context size estimation**
+#### **5.3 VRAM memory usage and max context size estimation**
 
 Below are presented results from memory usage for each test case. Some cases exceed available VRAM memory, therefore partial layer offloading to system RAM and CPU computation was required, to ensure test feasibility. In each test case, context size was fixed as 128 000 tokens. 
 
 Table 5: VRAM memory usage summary
 
-| TEST CASE |  |  | VRAM MEMORY USAGE ESTIMATION, GB |  |  |  |  |  | OFFLOAD |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **No.** | **Weight quant.** | **KV Cache quant** | **Sys** | **Model** | **Context \+ KV Cache** | **Total** | **Avail- able** | **Saved** | **Layers on GPU (offload)** |
-| 1 | Q6\_K | F16 | 1.5 | 23.5 | 12.5 | 37.5 | 31.84 | 0 | 39/48 |
+| No. | Weight quant. | KV Cache quant | Sys | Model | Context + KV Cache | Total | Available | Saved | Layers on GPU (offload) |
+|:---:|:--------------:|:---------------:|:---:|:-----:|:-------------------:|:-----:|:---------:|:-----:|:------------------------:|
+| 1 | Q6_K | F16 | 1.5 | 23.5 | 12.5 | 37.5 | 31.84 | 0 | 39/48 |
 | 2 | Q6\_K | Q8\_0 | 1.5 | 23.5 | 7 | 32 | 31.84 | 5.5 | 46/48 |
 | 3 | Q6\_K | Q4\_0 | 1.5 | 23.5 | 4.1 | 29.1 | 31.84 | 8.4 | 48/48 |
 | 4 | Q5\_K\_XL | F16 | 1.5 | 20.4 | 12.5 | 34.4 | 31.84 | 3.1 | 42/48 |
@@ -310,7 +313,7 @@ Table 6: Maximum context size estimation
 
 The proposed maximum context sizes are calculated based on near-total VRAM saturation. In practice, these values may need to be reduced by a safety margin of 2–5%, depending on workstation specific usage. Some applications, such as web browsers, IDEs, or graphical system processes, can consume additional video memory, potentially triggering performance-degrading offloading if the limit is exceeded.
 
-**5.4  Inference Performance Analysis**
+#### **5.4 Inference Performance Analysis**
 
 Although the NVIDIA RTX 5090 is one of the most powerful consumer-grade GPUs available, inference speed is strictly bottlenecked by VRAM capacity. When a model fails to fit entirely within the VRAM, the performance does not degrade linearly. It exhibits a binary "cliff" effect, decreasing by a factor of 20 to 60 on the test workstation.  
 To quantify this hardware bottleneck, all 12 test cases were individually benchmarked for inference speed. The tests utilized processing of a massive context prompt consisting of 113 667 tokens, which included five complex code snippets. The model was tasked with analyzing the code, summarizing its functionality, and generating corresponding unit tests. The quality analysis was not a subject of this evaluation, only measuring the raw speed. The prefill (prompt evaluation) and decoding (token generation) speeds were extracted directly from the LM Studio engine logs. The results are detailed in Table 7\.
@@ -337,16 +340,15 @@ To further illustrate the severity of the PCIe bus bottleneck, test case LP1 was
 This extreme speed degradation provides a critical hardware engineering guideline: in worst-case scenarios where exceeding VRAM is unavoidable, it is significantly more efficient to explicitly offload compute layers to the CPU rather than allowing the system to default to shared memory fallback.   
 It should be noted that the severity of this bottleneck is partially influenced by the PCIe 3.0 interface of the test bench; systems equipped with PCIe 4.0 or 5.0 might see slightly higher offloading speeds, though the “memory clif effect” remains a fundamental limitation
 
-**5.5 Comparative Analysis and performance evaluation**
+#### **5.5 Comparative Analysis and performance evaluation**
 
 The derived scoring metrics are presented in the table below. The Hard and Long components from the LongBench suite were deliberately isolated for this analysis, as the primary objective of this study is to evaluate performance under the most context-demanding and reasoning-intensive conditions. Furthermore, the Hard subset from the BigCodeBench framework has been integrated into the scoring system. This selection focuses the evaluation on the most demanding test components potentially most prone to more aggressive quantizations. 
 
 Table 8: Final outcome with score results
 
-| No. | Weight quant. | KV cache quant. | LongBench |  | BigCode- Bench | Weighted Result (A) | Degrada- tion Ratio (D) | Total VRAM GB | Intelli \-gence density (ID) |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|  |  |  | **Hard w=0.33** | **Long w=0.33** | **Hard w=0.33** |  |  |  |  |
-| 1 | Q6\_K | F16 | 35.0 | 37 | 27.7 | 33.20 | 1.00 | 37.50 | <span style="color:orange"> 0.89</span> </span> |
+| No. | Weight quant. | KV cache quant. | LongBench (Hard, w=0.33) | LongBench (Long, w=0.33) | BigCode-Bench (Hard, w=0.33) | Weighted Result (A) | Degradation Ratio (D) | Total VRAM (GB) | Intelligence Density (ID) |
+|:---:|:--------------:|:----------------:|:------------------------:|:------------------------:|:----------------------------:|:-------------------:|:---------------------:|:----------------:|:--------------------------:|
+| 1 | Q6_K | F16 | 35.0 | 37 | 27.7 | 33.20 | 1.00 | 37.50 | <span style="color:orange">0.89</span> |
 | 2 | Q6\_K | Q8\_0 | 37.3 | 38 | 29.7 | 34.97 | 1.05 | 32.00 | <span style="color:orange">0.93</span> |
 | 3 | Q6\_K | Q4\_0 | 34.4 | 33.3 | 25.7 | 31.10 | 0.94 | 29.10 | 0.83 |
 | 4 | Q5\_K\_XL | F16 | 36.0 | 35.2 | 26.4 | 32.50 | 0.98 | 34.40 | <span style="color:orange">0.87</span> |
